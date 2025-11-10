@@ -1,38 +1,33 @@
 package logger
 
 import (
-	"log/slog"
-	"os"
-	"time"
+	"fmt"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-func New(logLevel string) *slog.Logger {
-	var slogLevel slog.Level
-	switch logLevel {
-	case "debug":
-		slogLevel = slog.LevelDebug
-	case "info":
-		slogLevel = slog.LevelInfo
-	case "warn":
-		slogLevel = slog.LevelWarn
-	case "error":
-		slogLevel = slog.LevelError
+func New(mode string) (*zap.Logger, error) {
+	var config zap.Config
+
+	switch mode {
+	case "dev":
+		config = zap.NewDevelopmentConfig()
+
+		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	case "prod":
+		config = zap.NewProductionConfig()
 	default:
-		slogLevel = slog.LevelInfo
+		return nil, fmt.Errorf("unknown logger mode")
+	}
+	config.EncoderConfig.TimeKey = "timestamp"
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	logger, err := config.Build()
+
+	if err != nil {
+		return nil, fmt.Errorf("logger build err: %w", err)
 	}
 
-	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slogLevel,
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-			switch a.Key {
-			case slog.TimeKey:
-				a.Value = slog.StringValue(time.Now().Format("2006-01-02 15:04:05"))
-			case slog.LevelKey:
-				a.Value = slog.StringValue(a.Value.String())
-			}
-			return a
-		},
-	})
-
-	return slog.New(handler)
+	return logger, nil
 }

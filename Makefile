@@ -1,3 +1,11 @@
+MIGRATE_DB=postgres://postgres:postgres@localhost:5435/postgres?sslmode=disable
+
+migrate-up:
+	goose -dir migrations postgres "$(MIGRATE_DB)" up
+
+migrate-down:
+	goose -dir migrations postgres "$(MIGRATE_DB)" down
+
 run:
 	go run cmd/auth/main.go
 

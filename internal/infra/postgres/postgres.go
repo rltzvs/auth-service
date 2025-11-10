@@ -20,8 +20,8 @@ func NewDbConnection(config *config.Config) (*DB, error) {
 		return nil, fmt.Errorf("failed to parse config pgx pool: %w", err)
 	}
 
-	cfg.MaxConns = int32(poolCfg.MaxConns)
-	cfg.MinConns = int32(poolCfg.MinConns)
+	cfg.MaxConns = poolCfg.MaxConns
+	cfg.MinConns = poolCfg.MinConns
 	cfg.MaxConnLifetime = poolCfg.MaxLifeTime
 	cfg.MaxConnIdleTime = poolCfg.MaxIdleTime
 
